@@ -79,4 +79,17 @@ function checkActiveRoute(item) {
     </li>
 </template>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.layout-root-menuitem {
+    display: block;
+    width: fit-content;
+}
+.active-menuitem {
+    display: block;
+    width: fit-content;
+}
+.layout-submenu {
+    display: block;
+    width: 160px;
+}
+</style>

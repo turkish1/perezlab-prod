@@ -51,7 +51,7 @@ const router = createRouter({
 router.beforeEach((to) => {
     const auth = useAuthStore();
 
-    auth.restore();
+    // auth.restore();
 
     if (to.matched.some((r) => r.meta?.public)) return true;
 

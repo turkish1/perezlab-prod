@@ -49,6 +49,8 @@ async function onSubmit() {
         auth.isLoggedIn = true;
         auth.canAccessInternal = true;
 
+        auth.save();
+
         // 🔥 IMPORTANT: force state flush before navigation
         await router.isReady();
 
@@ -56,16 +58,8 @@ async function onSubmit() {
 
         // NOW navigate
         await router.push({ name: 'table' });
-        // auth.isLoggedIn = true;
-        // auth.canAccessInternal = true;
+     
 
-        // console.log('Login success, redirecting...');
-        // auth.save(); // ✅ persist
-        // // ✅ Use redirect if exists
-        // const redirect = auth.redirectAfterLogin || '/app/uikit/table';
-        // auth.setRedirectAfterLogin(null);
-
-        // await router.push(redirect);
     } catch (e) {
         console.error(e);
         error.value = e.message || 'Login failed';
