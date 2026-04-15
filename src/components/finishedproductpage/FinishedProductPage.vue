@@ -82,41 +82,7 @@ const dosageFormOptions = computed(() => {
         .filter((v) => v.length > 0)
         .map((v) => ({ label: v, value: v }));
 });
-// const saveItem = async () => {
-//     console.log('Saving item:', item.value);
-//     // submitted.value = true;
-//     ACTION.value = 'remove_stock';
 
-//     if (item.value.DESCRIPTION?.trim()) {
-//         // apiLoading.value = true;
-//         try {
-//             console.log('item value', item.value);
-//             // Prepare payload for your POST Lambda
-//             const payload = {
-//                 ACTION: ACTION.value, // Use create if no RM exists
-//                 RM: item.value.RM || null, // Added here
-//                 VENDOR: item.value.VENDOR,
-//                 DESCRIPTION: item.value.DESCRIPTION,
-//                 LOCATION: item.value.LOCATION,
-//                 CURRENT_INV_KG: item.value.CURRENT_INV_KG,
-//                 DATE: new Date().toLocaleDateString(),
-//                 name: 'Web Portal'
-//             };
-//             await postUpdateInventory(payload);
-
-//             // Refresh table and close
-//             await fetchInventory();
-//             console.log(inventory.value);
-//             // itemDialog.value = false;
-//             // item.value = {};
-//             // apiLoading.value = false;
-//         } catch (err) {
-//             toast.add({ severity: 'error', summary: 'Error', detail: 'Save failed', life: 3000 });
-//         } finally {
-//             apiLoading.value = false;
-//         }
-//     }
-// };
 const saveItem = async () => {
     // 1. Basic Validation
     if (!selectedProductId.value || selectedRM.value.length === 0) {
@@ -134,7 +100,7 @@ const saveItem = async () => {
             const inventoryPayload = {
                 ACTION: 'remove_stock',
                 RM: rmItem.rm,
-                Amount: Number(rmItem.weight) || 0,
+                Amount: Number(rmItem.weight * inputMixes) || 0,
                 DESCRIPTION: rmItem.name,
                 name: 'Batch Process System', // or user's name
                 DATE: new Date().toLocaleDateString()
@@ -143,21 +109,6 @@ const saveItem = async () => {
         });
 
         await Promise.all(inventoryPromises);
-
-        // 3. Post the Master Batch Process Form
-        // const batchPayload = {
-        //     product_id: selectedProductId.value,
-        //     product_name: selectedProduct.value?.product_name,
-        //     mixes: selectedProductName.value, // Mapping your UI field
-        //     client: selectedClientName.value,
-        //     lot_number: selectedLotNumb.value,
-        //     total_weight: inputAmountKG.value,
-        //     capsules_thousands: inputMixes.value,
-        //     type: productType.value,
-        //     date: new Date().toISOString()
-        // };
-
-        // await postFinProdForm(batchPayload);
 
         // 4. Success handling
         toast.add({ severity: 'success', summary: 'Success', detail: 'Inventory updated and Batch recorded.', life: 3000 });
@@ -252,7 +203,7 @@ onBeforeMount(async () => {
 
             <div class="flex flex-col gap-2">
                 <label class="font-semibold text-slate-700">Number of Mixes</label>
-                <InputText v-model="selectedProductName" placeholder="Number of Mixes" class="w-full" />
+                <InputText v-model="selectedProductName" placeholder="Number of Mixes" v-model.number="inputMixes" class="w-full" />
             </div>
 
             <div class="flex flex-col gap-2">
@@ -284,13 +235,13 @@ onBeforeMount(async () => {
                         </div>
                     </template>
                 </MultiSelect>
-                <label class="text-sm font-bold mt-1">Total Weight: {{ inputAmountKG }} kg</label>
+                <label class="text-sm font-bold mt-1">Total Weight: {{ (inputAmountKG * inputMixes) }} kg</label>
             </div>
 
             <div class="flex flex-col gap-2">
                 <label class="font-semibold text-slate-700"># of Units (Millions)</label>
                 <div class="flex gap-3">
-                    <input type="number" min="1" v-model.number="inputMixes" class="w-1/2 p-2 rounded border border-slate-300 bg-slate-50/50" />
+                    <input type="number" min="1" v-model.number="selectedCapsPerK" class="w-1/2 p-2 rounded border border-slate-300 bg-slate-50/50" />
                     <Select
                         v-model="productType"
                         :options="[
@@ -330,7 +281,7 @@ onBeforeMount(async () => {
                     </div>
                     <div class="flex justify-between py-1 border-b border-indigo-100 bg-indigo-50/50 px-1">
                         <span class="text-sm font-bold text-indigo-600 italic">Total Amount:</span>
-                        <span class="text-sm font-black text-indigo-700">{{ inputAmountKG || '0' }} kg</span>
+                        <span class="text-sm font-black text-indigo-700">{{ (inputAmountKG * inputMixes) || '0' }} kg</span>
                     </div>
                 </div>
             </div>
