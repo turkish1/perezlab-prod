@@ -42,7 +42,8 @@ const router = createRouter({
                 { path: 'uikit/batch-order-records', name: 'batch-order-records', meta: { roles: ['staff', 'admin'] }, component: () => import('@/views/uikit/BatchOrderDoc.vue') },
                 { path: 'uikit/batch-cap-blend', name: 'batch-cap-blend', meta: { roles: ['staff', 'admin'] }, component: () => import('@/views/uikit/BatchCapBlend.vue') },
                 { path: 'uikit/batch-cap-weight', name: 'batch-cap-weight', meta: { roles: ['staff', 'admin'] }, component: () => import('@/views/uikit/BatchCapWeight.vue') },
-                { path: 'uikit/batch-cap-yield', name: 'batch-cap-yield', meta: { roles: ['staff', 'admin'] }, component: () => import('@/views/uikit/BatchCapYield.vue') }
+                { path: 'uikit/batch-cap-yield', name: 'batch-cap-yield', meta: { roles: ['staff', 'admin'] }, component: () => import('@/views/uikit/BatchCapYield.vue') },
+                { path: 'uikit/cost', name: 'cost', meta: {roles: ['staff', 'admin']}, component: () => import('@/views/uikit/costPage.vue') }
             ]
         },
 

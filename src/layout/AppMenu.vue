@@ -50,7 +50,8 @@ const internalModel = [
             { label: 'TabletOrders', icon: 'pi pi-fw pi-bitcoin', to: '/app/uikit/batch-order-records', roles: ['staff', 'admin'] },
             { label: 'Batch Cap Blending', icon: 'pi pi-fw pi-filter-fill', to: '/app/uikit/batch-cap-blend', roles: ['staff', 'admin'] },
             { label: 'Batch Cap Weight', icon: 'pi pi-fw pi-gauge', to: '/app/uikit/batch-cap-weight', roles: ['staff', 'admin'] },
-            { label: 'Batch Cap Yield', icon: 'pi pi-fw pi-percentage', to: '/app/uikit/batch-cap-yield', roles: ['staff', 'admin'] }
+            { label: 'Batch Cap Yield', icon: 'pi pi-fw pi-percentage', to: '/app/uikit/batch-cap-yield', roles: ['staff', 'admin'] },
+            { label: 'Cost Page', icon: 'pi pi-fw pi-dollar', to: '/app/uikit/cost', roles: ['staff', 'admin']}
         ]
     },
 
