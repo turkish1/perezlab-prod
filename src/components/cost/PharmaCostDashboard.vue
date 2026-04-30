@@ -49,7 +49,7 @@ const state = reactive({
         bulkSelling: 0,
         bottleSelling: 0,
         originalBottleCost: 0,
-        targetMarginPercent: 30
+        targetMarginPercent: 30 // This is now user-editable
     },
 
     materials: [
@@ -139,8 +139,9 @@ const originalBottleCost = computed(() => {
 });
 
 const bottleSellingPrice = computed(() => {
-    const margin = Number(state.pricing.targetMarginPercent || 0) / 100;
-    return originalBottleCost.value + originalBottleCost.value * margin;
+    // Logic updated to calculate price based on the target margin input
+    const marginDecimal = Number(state.pricing.targetMarginPercent || 0) / 100;
+    return originalBottleCost.value * (1 + marginDecimal); 
 });
 
 const pharmaMarginPercent = computed(() => {
@@ -292,8 +293,8 @@ function removeFactRow(index) {
                 </div>
 
                 <div class="bg-white rounded-xl shadow p-5">
-                    <p class="text-sm text-gray-500">Selling Price</p>
-                    <h2 class="text-2xl font-bold">${{ state.pricing.bottleSelling.toFixed(2) }}</h2>
+                    <p class="text-sm text-gray-500">Calculated Selling Price</p>
+                    <h2 class="text-2xl font-bold">${{ bottleSellingPrice.toFixed(2) }}</h2>
                 </div>
 
                 <div class="bg-white rounded-xl shadow p-5">
@@ -304,6 +305,19 @@ function removeFactRow(index) {
                 <div class="bg-white rounded-xl shadow p-5">
                     <p class="text-sm text-gray-500">Pharma Margin</p>
                     <h2 class="text-2xl font-bold">{{ pharmaMarginPercent.toFixed(1) }}%</h2>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-2xl shadow p-6">
+                <h2 class="text-xl font-bold mb-4">Pricing Strategy</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FloatLabel>
+                        <InputNumber v-model="state.pricing.targetMarginPercent" inputId="target-margin" class="w-full" inputClass="w-full" suffix="%" />
+                        <label for="target-margin">Target Margin %</label>
+                    </FloatLabel>
+                    <div class="flex items-center text-gray-600 italic">
+                        Adjusting the margin will automatically update the Calculated Selling Price above.
+                    </div>
                 </div>
             </section>
 
