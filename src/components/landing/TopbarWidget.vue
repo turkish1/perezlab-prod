@@ -1,6 +1,4 @@
 <script setup>
-import Tooltip from 'primevue/tooltip';
-
 // app.directive('tooltip', Tooltip);
 function smoothScroll(id) {
     document.body.click();
@@ -53,7 +51,8 @@ function smoothScroll(id) {
             </li>
         </ul>
         <div class="flex border-t lg:border-t-0 border-surface py-4 lg:py-0 mt-4 lg:mt-0 gap-2">
-            <Button label="Login" v-tooltip.focus.top="'Internal Use Only'" text as="router-link" to="/auth/login" rounded></Button>
+            <!-- /auth/login -->
+            <Button label="Login" v-tooltip.focus.top="'Internal Use Only'" text as="router-link" to="/login" rounded></Button>
             <!-- <Button label="Register" to="/auth/login" rounded></Button> -->
         </div>
     </div>

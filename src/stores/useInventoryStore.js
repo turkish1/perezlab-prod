@@ -25,8 +25,3 @@ export const useInventoryStore = defineStore('inputdata', {
 
     // persist: true
 });
-
-// const store = createPinia();
-// // store.use(storeReset);
-
-// export default store;

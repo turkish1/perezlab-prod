@@ -14,8 +14,8 @@
 </template>
 
 <script setup>
-import { useAuthStore } from '@/stores/auth';
-const auth = useAuthStore();
+import { useAuthStore1 } from '@/stores/auth';
+const auth = useAuthStore1();
 </script>
 
 <style scoped>

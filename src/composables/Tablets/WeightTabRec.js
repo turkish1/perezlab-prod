@@ -1,7 +1,7 @@
-// composables/postlogic/postWeightTabRec.js
 import axios from 'axios';
 import { ref, unref } from 'vue';
 
+// add the url for the tablets weight record lambda function here
 const lambdaUrl = '';
 
 export default function useWeightTabRec() {

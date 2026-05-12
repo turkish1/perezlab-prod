@@ -1,9 +1,9 @@
 <script setup>
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore1 } from '@/stores/auth';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-const auth = useAuthStore();
+const auth = useAuthStore1();
 const router = useRouter();
 
 const username = ref('');
@@ -58,8 +58,6 @@ async function onSubmit() {
 
         // NOW navigate
         await router.push({ name: 'table' });
-     
-
     } catch (e) {
         console.error(e);
         error.value = e.message || 'Login failed';

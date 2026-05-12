@@ -1,9 +1,9 @@
 <script setup>
+import { loadQuote, saveQuote, simulateQuote } from '@/composables/Cost/costApi.js';
 import FloatLabel from 'primevue/floatlabel';
 import InputNumber from 'primevue/inputnumber';
 import InputText from 'primevue/inputtext';
 import { computed, reactive } from 'vue';
-import { loadQuote, saveQuote, simulateQuote } from '/src/composables/Cost/costApi.js';
 
 const state = reactive({
     product: {

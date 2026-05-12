@@ -6,12 +6,7 @@ export const useProductStore = defineStore('product', {
     }),
     actions: {
         addData(payload) {
-            console.log('STORE addData payload:', payload);
             this.inputproduct = Array.isArray(payload) ? payload : [];
         }
-
-        // addData(payload) {
-        //     this.inputproduct = Array.isArray(payload) ? payload : (payload?.items ?? []);
-        // }
     }
 });

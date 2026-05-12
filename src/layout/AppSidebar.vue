@@ -1,11 +1,11 @@
 <script setup>
 import AppMenu from '@/layout/AppMenu.vue';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore1 } from '@/stores/auth';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
-const auth = useAuthStore();
+const auth = useAuthStore1();
 
 const isInternalArea = computed(() => route.path.startsWith('/app'));
 
