@@ -1,12 +1,145 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { onMounted } from 'vue';
-
-import Checkbox from 'primevue/checkbox';
+import { getProducts, loadQuote, saveQuote, simulateQuote } from '@/composables/Cost/costApi.js';
 import FloatLabel from 'primevue/floatlabel';
 import InputNumber from 'primevue/inputnumber';
 import InputText from 'primevue/inputtext';
 import Select from 'primevue/select';
+import { computed, onMounted, reactive, ref } from 'vue';
+
+const products = ref([]);
+const selectedProduct = ref(null);
+
+async function loadProducts() {
+    try {
+        console.log('About to get products from API');
+        const data = await getProducts();
+        console.log('Got products:', data);
+        products.value = data.map((item) => ({
+            label: `${item.sku} - ${item.name}`,
+            value: item.name,
+            raw: item
+        }));
+    } catch (e) {
+        console.error('Failed to load products:', e);
+    }
+}
+
+onMounted(loadProducts);
+
+const state = reactive({
+    product: {
+        company: '',
+        name: '',
+        quote: '',
+        date: new Date().toLocaleDateString('en-US')
+    },
+
+    batch: {
+        quantityCapsules: 100000,
+        capsulesPerBottle: 90,
+        quantityBottles: 1111.11,
+        theoreticalWeightKg: 51.15
+    },
+
+    packagingCosts: {
+        bottle: 0,
+        cap: 0,
+        neckBand: 0,
+        label: 0,
+        cotton: 0,
+        silica: 0,
+        innerBox: 0,
+        masterBox: 0
+    },
+
+    fees: {
+        encapsulation: 0,
+        overhead: 0,
+        packagingLabor: 0,
+        labFee: 0,
+        qcTesting: 0,
+        qaLabor: 0,
+        facilityOverhead: 4000,
+        stabilityTesting: 3000,
+        regulatoryAmortization: 2000,
+        depreciation: 4000
+    },
+
+    pricing: {
+        bulkSelling: 0,
+        bottleSelling: 0,
+        originalBottleCost: 0,
+        targetMarginPercent: 30 // This is now user-editable
+    },
+
+    materials: [
+        {
+            name: '',
+            type: 'active',
+            mgUnit: 0,
+            totalKg: 0,
+            priceKg: 0,
+            totalPrice: 0,
+            weightPercent: 0
+        }
+    ],
+
+    pharmaAssumptions: {
+        yield: {
+            mean: 95,
+            min: 92,
+            max: 98,
+            stdDev: 1.5
+        },
+        batchFailureRatePercent: 2
+    },
+
+    pharmaResults: {
+        averageCostPerBottle: 0,
+        bestCaseCostPerBottle: 0,
+        worstCaseCostPerBottle: 0,
+        p10CostPerBottle: 0,
+        p90CostPerBottle: 0,
+        estimatedMarginPercent: 0
+    },
+
+    facts: {
+        servingSize: '',
+        servingsPer: '',
+        items: [
+            {
+                name: '',
+                amount: '',
+                dv: ''
+            }
+        ],
+        otherIngredients: ''
+    },
+
+    lastUpdated: '',
+
+    packaging: {
+        bottleDescription: '',
+        capDescription: '',
+        neckBandDescription: '',
+        cotton: '',
+        silica: '',
+        label: '',
+        innerBox: '',
+        masterBoxQty: '',
+        masterBoxPack: '',
+        bottlesPerMaster: ''
+    },
+
+    capsule: {
+        size: '',
+        color: '',
+        emptyCapsule: '',
+        weightMg: ''
+    },
+
+    error: ''
+});
 
 import { useCostStore } from '@/stores/costStore';
 
@@ -19,11 +152,19 @@ const {
 
     originalBottleCost,
 
-    totalMaterialCost,
-    totalKg,
-    bottleSellingPrice,
-    pharmaMarginPercent
-} = storeToRefs(costStore);
+const feeCostPerBottle = computed(() => {
+    return Number(state.fees.encapsulation || 0) + Number(state.fees.overhead || 0) + Number(state.fees.packagingLabor || 0) + Number(state.fees.labFee || 0);
+});
+
+const originalBottleCost = computed(() => {
+    return packagingCostPerBottle.value + feeCostPerBottle.value;
+});
+
+const bottleSellingPrice = computed(() => {
+    // Logic updated to calculate price based on the target margin input
+    const marginDecimal = Number(state.pricing.targetMarginPercent || 0) / 100;
+    return originalBottleCost.value * (1 + marginDecimal);
+});
 
 const {
     fetchProducts,
@@ -42,9 +183,94 @@ onMounted(() => {
 });
 </script>
 
-<template>
-    <div class="p-6 bg-gray-100 min-h-screen">
-        <div class="max-w-7xl mx-auto space-y-6">
+function refreshPricing() {
+    state.pricing.originalBottleCost = Number(originalBottleCost.value.toFixed(2));
+    state.pricing.bottleSelling = Number(bottleSellingPrice.value.toFixed(2));
+}
+
+async function saveToAWS(itemName) {
+    console.log('AM I IN HERE???????????');
+    loading.save = true;
+
+    console.log('Current State: ', JSON.stringify(state, null, 2));
+
+    state.product.name = itemName;
+    console.log('Saving with ID:', itemName);
+
+    try {
+        refreshPricing();
+
+        const payload = JSON.parse(JSON.stringify(state));
+
+        console.log('Payload for save: ', payload);
+
+        const data = await saveQuote(payload);
+
+        if (data) {
+            Object.assign(state, data);
+        }
+
+        console.log('State after save: ', JSON.stringify(state, null, 2));
+
+        alert('Quote Saved');
+    } catch (e) {
+        console.error(e);
+        alert('Save Failed');
+    } finally {
+        loading.save = false;
+    }
+}
+
+async function loadFromAWS(state) {
+    console.log('state before load: ', state);
+    const id = state.value;
+    console.log('First State: ', JSON.stringify(state, null, 2));
+
+    if (!id) {
+        await saveToAWS(state.value);
+        // return;
+    }
+
+    loading.load = true;
+
+    try {
+        console.log('Loading with ID:', id);
+        console.log('State before load API call: ', JSON.stringify(state, null, 2));
+        const data = await loadQuote(id, state);
+
+        if (!data.ok) {
+            await saveToAWS(state.value);
+            return;
+        }
+
+        if (data) {
+            Object.assign(state, data);
+            console.log('State after load: ', JSON.stringify(state, null, 2));
+            alert('Quote Loaded');
+        } else {
+            alert('Not Found');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Load Failed');
+    } finally {
+        loading.load = false;
+    }
+}
+
+async function runPharmaSimulation() {
+    console.log('Product Name: ', state.value);
+    if (!state.value) {
+        alert('Product name required');
+        return;
+    }
+
+    loading.simulation = true;
+
+    try {
+        refreshPricing();
+
+        const result = await simulateQuote(state);
 
             <!-- HEADER -->
             <header
@@ -96,11 +322,8 @@ onMounted(() => {
                         </label>
                     </FloatLabel>
 
-                <!-- ACTIONS -->
-                <button
-                    @click="load"
-                    class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-lg transition"
-                >
+            <section class="bg-white rounded-2xl shadow p-4 flex gap-3">
+                <!-- <button @click="loadFromAWS" class="bg-gray-700 text-white px-4 py-2 rounded-lg">
                     {{ loading.load ? 'Loading...' : 'Load' }}
                 </button>
 
@@ -109,7 +332,9 @@ onMounted(() => {
                     class="bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-lg transition"
                 >
                     {{ loading.save ? 'Saving...' : 'Save' }}
-                </button>
+                </button> -->
+
+                <Select @change="loadFromAWS" v-model="selectedProduct" :options="products" optionLabel="label" optionValue="value" placeholder="Select Product" class="w-full" />
 
                 <button
                     @click="simulate"
@@ -199,14 +424,7 @@ onMounted(() => {
                             Target Margin %
                         </label>
                     </FloatLabel>
-
-                    <div
-                        class="flex items-center text-gray-600 italic"
-                    >
-                        Adjusting the margin will automatically
-                        update the Calculated Selling Price above.
-                    </div>
-
+                    <div class="flex items-center text-gray-600 italic">Adjusting the margin will automatically update the Calculated Selling Price above.</div>
                 </div>
             </section>
 

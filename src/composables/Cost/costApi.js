@@ -12,14 +12,20 @@ export async function loadProductList() {
 }
 
 export async function saveQuote(state) {
+    console.log('name: ', state.product?.name);
     if (!state.product?.name) {
         throw new Error('Product name required');
     }
 
+    console.log('Am I in here? ', state.value);
+
     const payload = {
         ...state,
+        product: { name: state.product.name },
         lastUpdated: new Date().toISOString()
     };
+
+    console.log('Payload to save: ', JSON.stringify(payload, null, 2));
 
     const res = await fetch(API_URL, {
         method: 'POST',
@@ -29,18 +35,9 @@ export async function saveQuote(state) {
         body: JSON.stringify(payload)
     });
 
-    // If backend failed completely
-    if (!res.ok) {
-        // Attempt to still return local payload
-        return payload;
-    }
+    console.log('Save response: ', await res.text());
 
-    // If API returns empty body, fallback to payload
-    const text = await res.text();
-
-    if (!text) {
-        return payload;
-    }
+    if (!res.ok) throw new Error('Save failed');
 
     try {
         return JSON.parse(text);
@@ -49,25 +46,21 @@ export async function saveQuote(state) {
     }
 }
 
-export async function loadQuote(productName) {
-    if (!productName) {
-        throw new Error('Product name required');
+export async function loadQuote(quoteId, state) {
+    if (!quoteId) {
+        throw new Error('Quote ID required');
     }
 
-    const createBlankQuote = () => ({
-        product: {
-            company: '',
-            name: '',
-            type: '',
-            date: new Date().toLocaleDateString('en-US')
-        },
+    console.log('Loading quote with ID:', quoteId);
 
-        batch: {
-            quantityCapsules: 100000,
-            capsulesPerBottle: 90,
-            quantityBottles: 1111.11,
-            theoreticalWeightKg: 51.15
-        },
+    const res = await fetch(`${API_URL}/${encodeURIComponent(quoteId)}`);
+
+    console.log('Response: ', res);
+
+    if (!res.ok) {
+        console.log('Load failed, initializing new quote');
+        // await saveQuote(); // NEEDS TO BE PASSING FORM STATE.
+    }
 
         packagingCosts: {
             bottle: 0.00,
@@ -237,9 +230,21 @@ export async function loadQuote(productName) {
     }
 }
 
+export async function getProducts() {
+    const res = await fetch(`${API_URL}?action=loadList`, {
+        method: 'GET'
+    });
+
+    if (!res.ok) {
+        throw new Error('Product load failed');
+    }
+
+    return await res.json();
+}
+
 export async function simulateQuote(state) {
     if (!state.product?.name) {
-        throw new Error('Product name required');
+        throw new Error('Quote ID required');
     }
 
     const res = await fetch(API_URL, {
