@@ -1,16 +1,9 @@
-const API_URL =
-    'https://bfgpekkkg4egxr7i2tjwtlvaim0riqdq.lambda-url.us-east-1.on.aws';
+const API_URL = 'https://bfgpekkkg4egxr7i2tjwtlvaim0riqdq.lambda-url.us-east-1.on.aws';
 
 import { defineStore } from 'pinia';
 import { computed, reactive } from 'vue';
 
-import {
-    loadQuote,
-    saveQuote,
-    simulateQuote
-} from '@/composables/Cost/costApi.js';
-
-
+import { loadQuote, saveQuote, simulateQuote } from '@/composables/Cost/costApi.js';
 
 export const useCostStore = defineStore('costStore', () => {
     const state = reactive({
@@ -29,53 +22,53 @@ export const useCostStore = defineStore('costStore', () => {
         },
 
         packagingCosts: {
-            bottle: 0.00,
+            bottle: 0.0,
             cap: 0.12,
             neckBand: 0.02,
-            label: 0.00,
-            applicationOfCotton: 0.00,
-            silica: 0.00,
-            innerBox: 0.00,
-            masterBox: 0.00
+            label: 0.0,
+            applicationOfCotton: 0.0,
+            silica: 0.0,
+            innerBox: 0.0,
+            masterBox: 0.0
         },
 
-        shippingCosts:{
+        shippingCosts: {
             bottlesPerBox: 0,
-            customPalletAssembly: 0.00,
-            customerShippingLabels: 0.00
+            customPalletAssembly: 0.0,
+            customerShippingLabels: 0.0
         },
 
         fees: {
-            encapsulation: 0.30, 
-            overhead: 0.35,  // was 0.00 change
+            encapsulation: 0.3,
+            overhead: 0.35, // was 0.00 change
             packagingLabor: 0.35, // was defaulted to 0.00 waiting on user input. Preferrely, we may want a select box with different values.
-            labFee: 0.00,
+            labFee: 0.0,
 
-            qcTesting: 5000.00,
-            qaLabor: 2000.00,
-            facilityOverhead: 8000.00,
-            stabilityTesting: 3000.00,
-            regulatoryAmortization: 2000.00,
-            depreciation: 4000.00,
-            setupCost: 500.00
+            qcTesting: 5000.0,
+            qaLabor: 2000.0,
+            facilityOverhead: 8000.0,
+            stabilityTesting: 3000.0,
+            regulatoryAmortization: 2000.0,
+            depreciation: 4000.0,
+            setupCost: 500.0
         },
 
         pricing: {
-            bulkSelling: 0.00,
-            bottleSelling: 0.00,
-            originalBottleCost: 0.00,
-            targetMarginPercent: 30.00
+            bulkSelling: 0.0,
+            bottleSelling: 0.0,
+            originalBottleCost: 0.0,
+            targetMarginPercent: 30.0
         },
 
         materials: [
             {
                 name: '',
                 type: '',
-                mgUnit: 0.00,
-                totalKg: 0.00,
-                priceKg: 0.00,
-                totalPrice: 0.00,
-                weightPercent: 0.00
+                mgUnit: 0.0,
+                totalKg: 0.0,
+                priceKg: 0.0,
+                totalPrice: 0.0,
+                weightPercent: 0.0
             }
         ],
 
@@ -90,12 +83,12 @@ export const useCostStore = defineStore('costStore', () => {
         },
 
         pharmaResults: {
-            averageCostPerBottle: 0.00,
-            bestCaseCostPerBottle: 0.00,
-            worstCaseCostPerBottle: 0.00,
-            p10CostPerBottle: 0.00,
-            p90CostPerBottle: 0.00,
-            estimatedMarginPercent: 0.00
+            averageCostPerBottle: 0.0,
+            bestCaseCostPerBottle: 0.0,
+            worstCaseCostPerBottle: 0.0,
+            p10CostPerBottle: 0.0,
+            p90CostPerBottle: 0.0,
+            estimatedMarginPercent: 0.0
         },
 
         packaging: {
@@ -108,7 +101,7 @@ export const useCostStore = defineStore('costStore', () => {
             innerBox: '',
             masterBoxQty: '',
             masterBoxPack: '',
-            bottlesPerMaster: '',
+            bottlesPerMaster: ''
         },
 
         capsule: {
@@ -133,9 +126,8 @@ export const useCostStore = defineStore('costStore', () => {
         },
 
         lastUpdated: '',
-    
-        customShipping: false
 
+        customShipping: false
     });
 
     const loading = reactive({
@@ -175,67 +167,55 @@ export const useCostStore = defineStore('costStore', () => {
     });
 
     const feeCostPerBottle = computed(() => {
-        return (
-            Number(state.fees.encapsulation || 0) +
-            Number(state.fees.overhead || 0) +
-            Number(state.fees.packagingLabor || 0) +
-            Number(state.fees.labFee || 0)
-        );
+        return Number(state.fees.encapsulation || 0) + Number(state.fees.overhead || 0) + Number(state.fees.packagingLabor || 0) + Number(state.fees.labFee || 0) + Number(state.fees.facilityOverhead / state.batch.quantityBottles || 0);
     });
 
     const originalBottleCost = computed(() => {
-
         const tempShipLabels = state.shippingCosts.customerShippingLabels;
         const tempCustPallet = state.shippingCosts.customPalletAssembly;
         const tempBottBox = state.shippingCosts.bottlesPerBox;
 
-        if (state.customShipping == false){
-                state.shippingCosts.customerShippingLabels = 0;
-                state.shippingCosts.customPalletAssembly = 0;
-                state.shippingCosts.bottlesPerBox = 100;   
-            }
+        if (state.customShipping == false) {
+            state.shippingCosts.customerShippingLabels = 0;
+            state.shippingCosts.customPalletAssembly = 0;
+            state.shippingCosts.bottlesPerBox = 100;
+        }
 
-            const totalSum = packagingCostPerBottle.value +
-            feeCostPerBottle.value 
+        const totalSum =
+            packagingCostPerBottle.value +
+            feeCostPerBottle.value +
             //setupCost
-             + (state.fees.setupCost / state.batch.quantityBottles)
+            state.fees.setupCost / state.batch.quantityBottles +
             // Custom Shipping stuff here, only if box is checked
-            + state.shippingCosts.customerShippingLabels
-            + state.shippingCosts.customPalletAssembly
-            + (1 / state.shippingCosts.bottlesPerBox)
+            state.shippingCosts.customerShippingLabels +
+            state.shippingCosts.customPalletAssembly +
+            1 / state.shippingCosts.bottlesPerBox +
             // ADDING STUFF HERE
-            + ((state.materials.reduce((sum, item) => {
-            return sum + Number(item.totalPrice || 0);
-        }, 0)) / state.batch.quantityBottles);
+            state.materials.reduce((sum, item) => {
+                return sum + Number(item.totalPrice || 0);
+            }, 0) /
+                state.batch.quantityBottles;
 
-        if (state.customShipping == false){
+        if (state.customShipping == false) {
             state.shippingCosts.customerShippingLabels = tempShipLabels;
             state.shippingCosts.customPalletAssembly = tempCustPallet;
             state.shippingCosts.bottlesPerBox = tempBottBox;
         }
 
-        return (totalSum);
+        return totalSum;
     });
 
     const bottleSellingPrice = computed(() => {
-        const marginDecimal =
-            Number(state.pricing.targetMarginPercent || 0) / 100;
+        const marginDecimal = Number(state.pricing.targetMarginPercent || 0) / 100;
 
-            const totalBottlePrice = originalBottleCost.value / (1 - marginDecimal);
-
+        const totalBottlePrice = originalBottleCost.value / (1 - marginDecimal);
         return totalBottlePrice;
     });
 
     const pharmaMarginPercent = computed(() => {
-        const price = Number(
-            state.pricing.bottleSelling ||
-                bottleSellingPrice.value ||
-                0
-        );
+        const price = Number(state.pricing.bottleSelling || bottleSellingPrice.value || 0);
 
-        const cost = Number(
-            state.pharmaResults.averageCostPerBottle || 0
-        );
+        const cost = Number(state.pharmaResults.averageCostPerBottle || 0);
 
         if (!price || !cost) {
             return 0;
@@ -245,44 +225,39 @@ export const useCostStore = defineStore('costStore', () => {
     });
 
     function refreshPricing() {
-        state.pricing.originalBottleCost = Number(
-            originalBottleCost.value.toFixed(2)
-        );
+        state.pricing.originalBottleCost = Number(originalBottleCost.value.toFixed(2));
 
-        state.pricing.bottleSelling = Number(
-            bottleSellingPrice.value.toFixed(2)
-        );
+        state.pricing.bottleSelling = Number(bottleSellingPrice.value.toFixed(2));
     }
 
-async function fetchProducts() {
-    loading.products = true;
+    async function fetchProducts() {
+        loading.products = true;
 
-    try {
-        const res = await fetch(`${API_URL}?action=loadList`);
+        try {
+            const res = await fetch(`${API_URL}?action=loadList`);
 
-        const data = await res.json();
+            const data = await res.json();
 
-        console.log('Got products:', data);
+            console.log('Got products:', data);
 
-        productOptions.items = data.map(item => ({
-            label: `${item.sku} - ${item.name}`,
-            value: item.name,
-            raw: item
-        }));
+            productOptions.items = data.map((item) => ({
+                label: `${item.sku} - ${item.name}`,
+                value: item.name,
+                raw: item
+            }));
 
-        console.log(productOptions.items);
-
-    } catch (e) {
-        console.error(e);
-    } finally {
-        loading.products = false;
+            console.log(productOptions.items);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            loading.products = false;
+        }
     }
-}
 
     async function load() {
         if (!state.product.name) {
             alert('Select a Product');
-            return;
+            return false;
         }
 
         loading.load = true;
@@ -299,7 +274,8 @@ async function fetchProducts() {
             console.error(e);
             alert('Load Failed');
         } finally {
-            loading.load = false;
+            // loading.load = false;
+            return true;
         }
     }
 
